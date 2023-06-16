@@ -26,13 +26,11 @@ enum Cell {
 
 impl Cell {
     fn is_empty(&self) -> bool {
-        match self {
-            Cell::Empty => true,
-            _ => false,
-        }
+        matches!(self, Cell::Empty)
     }
 }
 
+#[derive(Clone)]
 struct Board {
     cells: [[Cell; 3]; 3],
     current_player: Player,
@@ -89,14 +87,11 @@ impl Board {
         ];
 
         win_positions.iter().any(|&positions| {
-            positions.iter().all(|&(row, col)| match self.cells[row][col] {
-                Cell::Occupied(p) if p == player => true,
-                _ => false,
-            })
+            positions.iter().all(|&(row, col)| matches!(self.cells[row][col], Cell::Occupied(p) if p == player))
         })
     }
 
-    fn minimax(&self, player: Player) -> (i32, Option<(usize, usize)>) {
+    fn minimax(&mut self, player: Player) -> (i32, Option<(usize, usize)>) {
         if self.has_won(player) {
             if player == Player::X {
                 return (1, None);
@@ -113,7 +108,7 @@ impl Board {
         for i in 0..3 {
             for j in 0..3 {
                 if self.cells[i][j].is_empty() {
-                    let new_board = self.clone();
+                    let mut new_board = self.clone();
                     new_board.make_move(i, j).unwrap();
                     let (score, _) = new_board.minimax(player.opposite());
 
